@@ -71,6 +71,7 @@ metadata:
   name: fakeshop
 spec:
   type: NodePort
-  - ports: 5000
+  ports: 
+    - port: 5000
   selector:
     app: fakeshop
