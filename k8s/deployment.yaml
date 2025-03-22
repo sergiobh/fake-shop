@@ -64,6 +64,8 @@ spec:
             value: ecommerce
           - name: FLASK_APP
             value: index.py
+        command: ["python"]
+        args: ["index.py"]
 ---
 apiVersion: v1
 kind: Service
