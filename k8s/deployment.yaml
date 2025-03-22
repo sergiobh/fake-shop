@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: postgre
 spec:
+  #replicas: 3  # Definindo 3 réplicas para simular múltiplos servidores
   selector:
     matchLabels:
       app: postgre
@@ -40,6 +41,7 @@ kind: Deployment
 metadata:
   name: fakeshop
 spec:
+  #replicas: 3  # Definindo 3 réplicas para simular múltiplos agentes
   selector:
     matchLabels:
       app: fakeshop
@@ -72,8 +74,10 @@ kind: Service
 metadata:
   name: fakeshop
 spec:
-  type: NodePort
+  type: LoadBalancer #NodePort
   ports: 
-    - port: 5000
+    - port: 80
+      targetPort: 5000
+      nodePort: 30000
   selector:
     app: fakeshop
