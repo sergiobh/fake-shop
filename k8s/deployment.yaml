@@ -30,7 +30,8 @@ metadata:
   name: postgre
 spec:
   type: ClusterIP
-  - ports: 5432
+  ports:
+    - port: 5432
   selector:
     app: postgre
 ---
