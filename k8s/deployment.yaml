@@ -23,3 +23,33 @@ spec:
             value: ecommerce
           - name: POSTGRES_DB
             value: ecommerce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fakeshop
+spec:
+  selector:
+    matchLabels:
+      app: fakeshop
+  template:
+    metadata:
+      labels: 
+        app: fakeshop
+    spec:
+      containers:
+      - name: fakeshop
+        image: sergiobh/fake-shop:v1
+        ports:
+        - containerPort: 5000
+        env:
+          - name: DB_HOST
+            value: postgre
+          - name: DB_USER
+            value: ecommerce
+          - name: DB_PASSWORD
+            value: Pg1234
+          - name: DB_NAME
+            value: ecommerce
+          - name: DB_PORT
+            value: 5432
