@@ -3,17 +3,18 @@ on:
   push:
     branches: ["main"]
   workflow_dispatch: 
-    jobs:
-      CI:
-        runs-on: ubuntu-latest
-        steps:
-          - run: echo "Obter codigo" #Tarefa / Etapa do fluxo
-          - run: echo "Executar o Docker Build"
-          - run: echo "Enviar a imagem Docker para o Docker Hub"
-      CD:
-        runs-on: ubuntu-latest
-        steps:
-          - run: echo "Obter codigo"
-          - run: echo "Configurar o Kubeconfig"
-          - run: echo "Executar o apply"
-        
+  
+jobs:
+  CI:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Obter codigo" #Tarefa / Etapa do fluxo
+      - run: echo "Executar o Docker Build"
+      - run: echo "Enviar a imagem Docker para o Docker Hub"
+  CD:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Obter codigo"
+      - run: echo "Configurar o Kubeconfig"
+      - run: echo "Executar o apply"
+    
