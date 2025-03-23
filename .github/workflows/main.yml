@@ -24,13 +24,26 @@ jobs:
           context: ./src
           push: true
           file: ./src/Dockerfile
-          tags: sergiobh/fake-shop:v${{ github.run_number }}
+          tags: |
+            sergiobh/fake-shop:v${{ github.run_number }}
+            sergiobh/fake-shop
       - run: echo "Enviar a imagem Docker para o Docker Hub"
   CD:
     needs: [CI]
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Obter codigo"
+      - run: echo "Obtendo o codigo" 
+      - name: Checkout - Obtendo o codigo #Tarefa / Etapa do fluxo
+        uses: actions/checkout@v4.2.2
       - run: echo "Configurar o Kubeconfig"
+      - uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG_DIGITALOCEN }}
       - run: echo "Executar o apply"
-    
+      - uses: Azure/k8s-deploy@v5
+        with:
+          manifests: |
+            k8s/deployment.yaml
+          images: |
+            sergiobh/fake-shop:v${{ github.run_number }}
