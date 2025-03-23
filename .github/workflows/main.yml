@@ -19,7 +19,6 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Construção e Envio da Imagem Docker - Build and push
         uses: docker/build-push-action@v6
         with:
@@ -27,11 +26,7 @@ jobs:
           push: true
           file: ./src/DockerFile
           tags: sergiobh/fake-shop:v1
-
-      
       - run: echo "Enviar a imagem Docker para o Docker Hub"
-
-      
   CD:
     needs: [CI]
     runs-on: ubuntu-latest
