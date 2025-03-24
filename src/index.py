@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import uuid
 from flask import Flask, flash, make_response, redirect, render_template, request, url_for
 import os
