@@ -7,21 +7,18 @@ from models.base import db
 from flask_migrate import Migrate, upgrade
 import random
 from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-#from prometheus_flask_exporter import PrometheusMetrics #sugestão errada!
-
 
 app = Flask(__name__,
             static_url_path='',
             static_folder='static',
             template_folder='templates')
 
-app.secret_key = 'supersecretkey'  # Para manter a sessÃ£o
+app.secret_key = 'supersecretkey'  # Para manter a sessão
 
 metrics = GunicornPrometheusMetrics(app)
-#metrics = PrometheusMetrics(app)  #sugestão errada!
 metrics.register_endpoint('/metrics')
 
-# ConfiguraÃ§Ã£o do banco de dados
+# Configuração do banco de dados
 db_host = os.getenv('DB_HOST', 'localhost')
 db_user = os.getenv('DB_USER', 'ecommerce')
 db_password = os.getenv('DB_PASSWORD', 'Pg1234')
@@ -38,7 +35,7 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 def generate_order_number():
-    """Gera um nÃºmero de pedido Ãºnico com 6 dÃ­gitos."""
+    """Gera um número de pedido único com 6 dígitos."""
     return f'{random.randint(100000, 999999)}'
 
 def apply_migrations():
@@ -56,11 +53,11 @@ def contact():
 
 @app.route('/checkout', methods=['GET'])
 def checkout_get():
-    # ObtÃ©m o pedido pelo cookie
+    # Obtém o pedido pelo cookie
     order = get_order_from_cookie()
 
     if not order or not order.items:
-        flash("Seu carrinho estÃ¡ vazio. Adicione produtos antes de prosseguir para o checkout.", "warning")
+        flash("Seu carrinho está vazio. Adicione produtos antes de prosseguir para o checkout.", "warning")
         return redirect(url_for('shop'))
 
     items = order.items  # Carrega os itens do pedido
@@ -72,7 +69,7 @@ def checkout_get():
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
-    # ObtÃ©m dados do formulÃ¡rio de checkout
+    # Obtém dados do formulário de checkout
     user_name = f"{request.form['first_name']} {request.form['last_name']}"
     user_email = request.form['email']
     mobile = request.form['mobile']
@@ -80,22 +77,22 @@ def checkout():
     address2 = request.form.get('address2', '')  # Opcional
     city = request.form['city']
     state = request.form['state']
-    country = request.form.get('country', 'Brasil')  # PadrÃ£o para Brasil
+    country = request.form.get('country', 'Brasil')  # Padrão para Brasil
     zip_code = request.form['zip']
 
-    # InformaÃ§Ãµes de pagamento
+    # Informações de pagamento
     card_name = request.form['card_name']
     card_number = request.form['card_number']
     expiry_date = request.form['expiry_date']
     cvv = request.form['cvv']
 
-    # Verifica se hÃ¡ um pedido aberto
+    # Verifica se há um pedido aberto
     order = Order.query.filter_by(is_open=True).first()
     if not order:
-        flash("NÃ£o hÃ¡ itens no carrinho para finalizar o pedido.", "error")
+        flash("Não há itens no carrinho para finalizar o pedido.", "error")
         return redirect(url_for('cart'))
 
-    # Atualiza o pedido com dados do usuÃ¡rio e do endereÃ§o
+    # Atualiza o pedido com dados do usuário e do endereço
     order.user_name = user_name
     order.user_email = user_email
     order.mobile = mobile
@@ -106,21 +103,21 @@ def checkout():
     order.country = country
     order.zip_code = zip_code
 
-    # Atualiza o pedido com informaÃ§Ãµes do cartÃ£o de crÃ©dito
+    # Atualiza o pedido com informações do cartão de crédito
     order.card_name = card_name
     order.card_number = card_number
     order.expiry_date = expiry_date
     order.cvv = cvv
 
-    # Gera um nÃºmero Ãºnico para o pedido e fecha o pedido
+    # Gera um número único para o pedido e fecha o pedido
     order.order_number = generate_order_number()
     order.is_open = False
 
-    # Salva as alteraÃ§Ãµes no banco de dados
+    # Salva as alterações no banco de dados
     db.session.commit()
 
-    # ConfirmaÃ§Ã£o de sucesso
-    flash(f"Pedido realizado com sucesso! NÃºmero do pedido: {order.order_number}", "success")
+    # Confirmação de sucesso
+    flash(f"Pedido realizado com sucesso! Número do pedido: {order.order_number}", "success")
     return redirect(url_for('order_confirmation', order_number=order.order_number))
 
 
@@ -203,7 +200,7 @@ def get_order_from_cookie():
         # Converte o valor do cookie para UUID
         uuid_order_id = uuid.UUID(order_id)
     except ValueError:
-        # Retorna None se a conversÃ£o falhar
+        # Retorna None se a conversão falhar
         return None
 
     # Ajuste na consulta para converter explicitamente para string
@@ -216,7 +213,7 @@ def get_order_from_cookie():
 def cart():
     order = get_order_from_cookie()
     if not order:
-        flash('Seu carrinho estÃ¡ vazio.', 'warning')
+        flash('Seu carrinho está vazio.', 'warning')
         return render_template('cart.html', items=[], subtotal=0, total=0)
 
     items = order.items
@@ -258,5 +255,5 @@ def index():
     return render_template('index.html', products=products)
 
 if __name__ == '__main__':
-    apply_migrations()
+    #apply_migrations()
     app.run(host='0.0.0.0', port=5000, debug=True)
