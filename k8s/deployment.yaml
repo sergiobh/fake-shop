@@ -55,23 +55,31 @@ spec:
         app: fakeshop
     spec:
       containers:
-      - name: fakeshop
-        image: sergiobh/fake-shop:v1
-        ports:
-        - containerPort: 5000
-        env:
-          - name: DB_HOST
-            value: postgre
-          - name: DB_USER
-            value: ecommerce
-          - name: DB_PASSWORD
-            value: Pg1234
-          - name: DB_NAME
-            value: ecommerce
-          - name: FLASK_APP
-            value: index.py
-        command: ["python"]
-        args: ["index.py"]
+        - name: fakeshop
+          image: sergiobh/fake-shop:v1
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: postgre
+            - name: DB_USER
+              value: ecommerce
+            - name: DB_PASSWORD
+              value: Pg1234
+            - name: DB_NAME
+              value: ecommerce
+            - name: FLASK_APP
+              value: index.py
+            - name: prometheus_multiproc_dir
+              value: /tmp/prometheus
+          command: ["python"]
+          args: ["index.py"]
+          volumeMounts:
+            - name: prometheus-metrics
+              mountPath: /tmp/prometheus
+      volumes:
+        - name: prometheus-metrics
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
