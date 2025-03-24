@@ -7,9 +7,7 @@ from models.product import Product
 from models.base import db
 from flask_migrate import Migrate, upgrade
 import random
-import time
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
-from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
 
 app = Flask(__name__,
             static_url_path='',
@@ -18,46 +16,14 @@ app = Flask(__name__,
 
 app.secret_key = 'supersecretkey'  # Para manter a sessão
 
-# Iniciar o PrometheusMetrics
-metrics = PrometheusMetrics(app)
+metrics = GunicornPrometheusMetrics(app) # metrics = GunicornPrometheusMetrics(app, group_by="endpoint")
+metrics.register_endpoint('/metrics') # se o de cima estiver descomentado tem que comentar esta linha
 
-# Criar métricas para o Prometheus
-REQUEST_COUNT = Counter('http_requests_total', 'Total de requisições HTTP', ['method', 'endpoint'])
-ACTIVE_USERS = Gauge('active_users', 'Número de usuários ativos')
-RESPONSE_TIME = Histogram('http_request_duration_seconds', 'Duração da requisição HTTP em segundos', ['method', 'endpoint'])
-REQUEST_ERRORS = Counter('http_request_errors_total', 'Total de erros HTTP', ['method', 'endpoint'])
-
-# Expor a rota de métricas
+# inclui recentemente poderá ser deletado
 @app.route('/metrics')
-def metrics_route():
-    return generate_latest()
-
-# Aplicar as migrations automaticamente
-def apply_migrations():
-    with app.app_context():
-        try:
-            upgrade()  # Aplicar todas as migrations pendentes
-            print("Migrations applied successfully.")
-        except Exception as e:
-            print(f"Error applying migrations: {e}")
-
-@app.before_request
-def before_request():
-    # Registra o tempo inicial da requisição para medir latência depois
-    request.start_time = time.time()
-    # Incrementa o contador de requisições
-    REQUEST_COUNT.labels(method=request.method, endpoint=request.endpoint).inc()
-
-@app.after_request
-def after_request(response):
-    # Mede o tempo de resposta e registra
-    RESPONSE_TIME.labels(method=request.method, endpoint=request.endpoint).observe(time.time() - request.start_time)
-    
-    if response.status_code >= 400:
-        # Registra erros HTTP
-        REQUEST_ERRORS.labels(method=request.method, endpoint=request.endpoint).inc()
-
-    return response
+def metrics():
+    # Exibe as métricas no formato que o Prometheus espera
+    return generate_latest(REGISTRY)
 
 # Configuração do banco de dados
 db_host = os.getenv('DB_HOST', 'localhost')
@@ -79,6 +45,15 @@ def generate_order_number():
     """Gera um número de pedido único com 6 dígitos."""
     return f'{random.randint(100000, 999999)}'
 
+def apply_migrations():
+    """Aplicar migrations automaticamente."""
+    with app.app_context():
+        try:
+            upgrade()  # Aplicar todas as migrations pendentes
+            print("Migrations applied successfully.")
+        except Exception as e:
+            print(f"Error applying migrations: {e}")
+
 @app.route('/contact')
 def contact():
     return render_template('contact.html')
@@ -97,6 +72,7 @@ def checkout_get():
     total = subtotal + 10  # Valor fixo de envio, por exemplo
 
     return render_template('checkout.html', items=items, subtotal=subtotal, total=total)
+
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
@@ -151,6 +127,7 @@ def checkout():
     flash(f"Pedido realizado com sucesso! Número do pedido: {order.order_number}", "success")
     return redirect(url_for('order_confirmation', order_number=order.order_number))
 
+
 @app.route('/order_confirmation/<order_number>')
 def order_confirmation(order_number):
     order = Order.query.filter_by(order_number=order_number).first()
@@ -185,6 +162,7 @@ def get_or_create_order():
 @app.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
     product = Product.query.get_or_404(product_id)
+    print("Entrou no add_to_cart")
     order, response = get_or_create_order()
     quantity = int(request.form.get("quantity"))
 
@@ -237,6 +215,7 @@ def get_order_from_cookie():
         Order.uuid == str(uuid_order_id), Order.is_open == True
     ).first()
 
+
 @app.route('/cart', methods=['GET', 'POST'])
 def cart():
     order = get_order_from_cookie()
@@ -250,6 +229,7 @@ def cart():
     total = subtotal + shipping
 
     return render_template('cart.html', items=items, subtotal=subtotal, total=total)
+
 
 @app.route('/update_quantity/<int:item_id>', methods=['POST'])
 def update_quantity(item_id):
@@ -265,6 +245,7 @@ def update_quantity(item_id):
     flash('Quantidade atualizada com sucesso!', 'success')
     return redirect(url_for('cart'))
 
+
 @app.route('/remove_item/<int:item_id>', methods=['POST'])
 def remove_item(item_id):
     item = OrderItem.query.get_or_404(item_id)
@@ -274,11 +255,23 @@ def remove_item(item_id):
     flash('Item removido do carrinho.', 'success')
     return redirect(url_for('cart'))
 
+
 @app.route('/')
 def index():
     products = Product.query.all()
     return render_template('index.html', products=products)
 
+
+# Exemplo de uma métrica simples
+#c = Counter('my_counter', 'A counter')
+
+# Aumentando o contador como exemplo
+c.inc()
+
 if __name__ == '__main__':
     apply_migrations()
+    
+    # inclui recentemente poderá ser deletado
+    #start_http_server(5000)  # Inicia o servidor na porta 5000
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
