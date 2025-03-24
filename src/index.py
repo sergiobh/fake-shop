@@ -261,6 +261,13 @@ def index():
     products = Product.query.all()
     return render_template('index.html', products=products)
 
+
+# Exemplo de uma métrica simples
+c = Counter('my_counter', 'A counter')
+
+# Aumentando o contador como exemplo
+c.inc()
+
 if __name__ == '__main__':
     apply_migrations()
     
