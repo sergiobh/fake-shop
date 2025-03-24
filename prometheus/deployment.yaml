@@ -651,7 +651,7 @@ metadata:
   annotations:
     prometheus.io/scrape: 'true'
 spec:
-  type: "ClusterIP"
+  type: "ClusterIP" #"LoadBalancer" estimo que este servico nao pode ficar Loadbalancer
   ports:
   - name: "http"
     protocol: TCP
@@ -714,7 +714,7 @@ spec:
     app.kubernetes.io/name: prometheus
     app.kubernetes.io/instance: prometheus
   sessionAffinity: None
-  type: "LoadBalancer"
+  type: LoadBalancer #NodePort Este cara esta sendo o vilao
 ---
 # Source: prometheus/charts/prometheus-node-exporter/templates/daemonset.yaml
 apiVersion: apps/v1
@@ -936,7 +936,7 @@ spec:
       app.kubernetes.io/component: server
       app.kubernetes.io/name: prometheus
       app.kubernetes.io/instance: prometheus
-  replicas: 1
+  #replicas: 1
   revisionHistoryLimit: 10
   strategy:
     type: Recreate
@@ -1179,7 +1179,7 @@ metadata:
     app.kubernetes.io/version: "11.3.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  type: NodePort #LoadBalancer 
+  type: LoadBalancer # NodePort este cara esta sendo o vilao
   ports:
     - name: service
       port: 80
@@ -1202,7 +1202,7 @@ metadata:
     app.kubernetes.io/version: "11.3.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 1
+  #replicas: 1 nao ter replicacao
   revisionHistoryLimit: 10
   selector:
     matchLabels:

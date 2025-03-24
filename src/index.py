@@ -16,8 +16,14 @@ app = Flask(__name__,
 
 app.secret_key = 'supersecretkey'  # Para manter a sessão
 
-metrics = GunicornPrometheusMetrics(app)
-metrics.register_endpoint('/metrics')
+metrics = GunicornPrometheusMetrics(app) # metrics = GunicornPrometheusMetrics(app, group_by="endpoint")
+metrics.register_endpoint('/metrics') # se o de cima estiver descomentado tem que comentar esta linha
+
+# inclui recentemente poderá ser deletado
+@app.route('/metrics')
+def metrics():
+    # Exibe as métricas no formato que o Prometheus espera
+    return generate_latest(REGISTRY)
 
 # Configuração do banco de dados
 db_host = os.getenv('DB_HOST', 'localhost')
@@ -256,5 +262,9 @@ def index():
     return render_template('index.html', products=products)
 
 if __name__ == '__main__':
-    #apply_migrations()
+    apply_migrations()
+    
+    # inclui recentemente poderá ser deletado
+    start_http_server(5000)  # Inicia o servidor na porta 5000
+    
     app.run(host='0.0.0.0', port=5000, debug=True)
