@@ -6,8 +6,8 @@ from models.product import Product
 from models.base import db
 from flask_migrate import Migrate, upgrade
 import random
-#from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
-from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_flask_exporter.multiprocess import GunicornPrometheusMetrics
+#from prometheus_flask_exporter import PrometheusMetrics #sugest„o errada!
 
 
 app = Flask(__name__,
@@ -17,8 +17,8 @@ app = Flask(__name__,
 
 app.secret_key = 'supersecretkey'  # Para manter a sess√£o
 
-#metrics = GunicornPrometheusMetrics(app)
-metrics = PrometheusMetrics(app)
+metrics = GunicornPrometheusMetrics(app)
+#metrics = PrometheusMetrics(app)  #sugest„o errada!
 metrics.register_endpoint('/metrics')
 
 # Configura√ß√£o do banco de dados
